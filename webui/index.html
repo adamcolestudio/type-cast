@@ -34,11 +34,13 @@ const CONFIG = {
   LOOP_SECONDS: null,
 
   // --- Sync / drift correction (seconds) ---
-  CHECK_INTERVAL_MS: 1000,   // how often to check drift (1–2s is plenty)
-  DEAD_ZONE_S:       0.5,    // within this of target -> DO NOTHING (the key knob)
-  NUDGE_STOP_S:      0.25,   // stop nudging once back inside this (hysteresis)
-  HARD_SEEK_S:       3.0,    // drift beyond this -> hard jump (only after a stall)
-  NUDGE_RATE:        0.05,   // playbackRate nudge for small drift (±5%, invisible)
+  // Dead-zone width is the real lever on how tightly the 8 screens track each
+  // other (not the check interval). These values target ~0.1–0.2s steady-state.
+  CHECK_INTERVAL_MS: 500,    // how often to check drift
+  DEAD_ZONE_S:       0.15,   // within this of target -> DO NOTHING (the key knob)
+  NUDGE_STOP_S:      0.05,   // stop nudging once back inside this (hysteresis)
+  HARD_SEEK_S:       2.0,    // drift beyond this -> hard jump (only after a stall)
+  NUDGE_RATE:        0.08,   // playbackRate nudge for small drift (±8%, ~invisible)
 
   // --- Display ---
   OBJECT_FIT: 'cover',       // 'cover' (fill, may crop) | 'contain' (letterbox) | 'fill'
@@ -73,28 +75,42 @@ let nudging = false;
 function wallTarget(loop){ return (Date.now() / 1000) % loop; }
 
 // ---- download the clip once, play from an in-memory blob (no per-loop restream) ----
+// One fetch at the given cache mode, streamed so we can drive the progress bar.
+async function fetchAtMode(url, cacheMode, onProgress){
+  const res = await fetch(url, { cache: cacheMode });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const total = +res.headers.get('Content-Length') || 0;
+  if (!res.body || !total){ onProgress(null); return await res.blob(); }
+  const reader = res.body.getReader();
+  const chunks = []; let got = 0;
+  for (;;){
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value); got += value.length;
+    onProgress(got / total);
+  }
+  return new Blob(chunks, { type: res.headers.get('Content-Type') || 'video/mp4' });
+}
+
+// Strategy: revalidate against the server's ETag first ('no-cache') so a clip
+// re-uploaded under the SAME filename is picked up — unchanged -> 304, instant
+// replay from cache; changed -> full re-download. If the network isn't up yet
+// (e.g. fresh power-on), fall back to the cached copy ('force-cache') so the
+// kiosk still plays instantly on plug-in / restart.
 async function fetchVideoBlob(url, onProgress){
   for (let attempt = 0; attempt <= CONFIG.FETCH_RETRIES; attempt++){
     try {
-      const res = await fetch(url, { cache: 'force-cache' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const total = +res.headers.get('Content-Length') || 0;
-      if (!res.body || !total){ onProgress(null); return await res.blob(); }
-      const reader = res.body.getReader();
-      const chunks = []; let got = 0;
-      for (;;){
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value); got += value.length;
-        onProgress(got / total);
-      }
-      return new Blob(chunks, { type: res.headers.get('Content-Type') || 'video/mp4' });
+      return await fetchAtMode(url, 'no-cache', onProgress);
     } catch (e){
-      if (attempt === CONFIG.FETCH_RETRIES) throw e;
+      if (attempt === CONFIG.FETCH_RETRIES) break;
       msg.textContent = `retrying… (${attempt + 1})`;
       await new Promise(r => setTimeout(r, CONFIG.FETCH_RETRY_MS));
     }
   }
+  // Network unreachable after all retries: play whatever's in the HTTP cache.
+  // (Throws if there's nothing cached yet — i.e. a true first-boot with no net.)
+  msg.textContent = 'offline — using cached clip';
+  return await fetchAtMode(url, 'force-cache', onProgress);
 }
 
 async function boot(){

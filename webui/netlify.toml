@@ -1,0 +1,22 @@
+# Static kiosk site: index.html + videos/*.mp4
+# Deploy this folder directly:  netlify deploy --prod --dir .
+#
+# Caching goal: clips download once and replay from cache, BUT a clip
+# re-uploaded under the SAME filename is picked up automatically. We do
+# that with ETag revalidation (max-age=0, must-revalidate) on each load.
+
+[build]
+  publish = "."
+
+# HTML gates everything and is tiny — never serve a stale copy.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Videos: cacheable, but revalidate against the ETag every load.
+# Unchanged file -> 304 (no bytes re-sent). Replaced file -> new ETag -> re-download.
+[[headers]]
+  for = "/videos/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
