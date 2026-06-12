@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Layer wall — screen</title>
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none}
+  #v{position:fixed;inset:0;width:100%;height:100%;object-fit:var(--fit,cover);background:#000;display:block}
+  #overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+           background:#000;color:#444;font:13px/1.5 system-ui,sans-serif;gap:14px}
+  #overlay.hidden{display:none}
+  #bar{width:180px;height:3px;background:#1a1a1a;border-radius:2px;overflow:hidden}
+  #bar>i{display:block;height:100%;width:0;background:#555;transition:width .15s}
+  #dbg{position:fixed;top:8px;left:8px;color:#0f0;font:11px/1.4 ui-monospace,monospace;
+       background:rgba(0,0,0,.6);padding:6px 8px;border-radius:5px;white-space:pre;display:none;z-index:10}
+</style>
+</head>
+<body>
+  <video id="v" muted playsinline></video>
+  <div id="overlay"><div id="msg">loading…</div><div id="bar"><i></i></div></div>
+  <div id="dbg"></div>
+
+<script>
+// ============================== CONFIG ==============================
+// Everything you'd tune lives here.
+const CONFIG = {
+  // Where each screen's video lives, relative to this page. {N} = screen number.
+  // Files go in a /videos/ folder next to index.html, e.g. videos/screen3.mp4
+  VIDEO_URL: (n) => `videos/screen${n}.mp4`,
+
+  // Loop length in seconds. null = auto-detect from the video's own duration.
+  // Leave null if all 8 clips are exactly equal length (recommended).
+  LOOP_SECONDS: null,
+
+  // --- Sync / drift correction (seconds) ---
+  CHECK_INTERVAL_MS: 1000,   // how often to check drift (1–2s is plenty)
+  DEAD_ZONE_S:       0.5,    // within this of target -> DO NOTHING (the key knob)
+  NUDGE_STOP_S:      0.25,   // stop nudging once back inside this (hysteresis)
+  HARD_SEEK_S:       3.0,    // drift beyond this -> hard jump (only after a stall)
+  NUDGE_RATE:        0.05,   // playbackRate nudge for small drift (±5%, invisible)
+
+  // --- Display ---
+  OBJECT_FIT: 'cover',       // 'cover' (fill, may crop) | 'contain' (letterbox) | 'fill'
+  MUTED: true,               // must be true for kiosk autoplay (unless chromium flag set)
+
+  // --- Robustness ---
+  FETCH_RETRIES: 6,          // retries if the download fails (8 Pis booting at once)
+  FETCH_RETRY_MS: 2500,      // wait between retries
+  AUTO_RELOAD_MIN: 0,        // 0 = off. Set e.g. 180 to re-snap every 3h as insurance.
+};
+// ===================================================================
+
+const params = new URLSearchParams(location.search);
+const SCREEN = parseInt(params.get('screen') || '1', 10);
+const DEBUG  = params.get('debug') === '1';
+// Optional per-URL fit override: ?fit=contain
+const fitParam = params.get('fit');
+document.documentElement.style.setProperty('--fit', fitParam || CONFIG.OBJECT_FIT);
+
+const v = document.getElementById('v');
+const overlay = document.getElementById('overlay');
+const msg = document.getElementById('msg');
+const barFill = document.querySelector('#bar > i');
+const dbg = document.getElementById('dbg');
+if (DEBUG) dbg.style.display = 'block';
+v.muted = CONFIG.MUTED;
+
+let N = null;          // resolved loop length
+let ready = false;
+let nudging = false;
+
+function wallTarget(loop){ return (Date.now() / 1000) % loop; }
+
+// ---- download the clip once, play from an in-memory blob (no per-loop restream) ----
+async function fetchVideoBlob(url, onProgress){
+  for (let attempt = 0; attempt <= CONFIG.FETCH_RETRIES; attempt++){
+    try {
+      const res = await fetch(url, { cache: 'force-cache' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const total = +res.headers.get('Content-Length') || 0;
+      if (!res.body || !total){ onProgress(null); return await res.blob(); }
+      const reader = res.body.getReader();
+      const chunks = []; let got = 0;
+      for (;;){
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value); got += value.length;
+        onProgress(got / total);
+      }
+      return new Blob(chunks, { type: res.headers.get('Content-Type') || 'video/mp4' });
+    } catch (e){
+      if (attempt === CONFIG.FETCH_RETRIES) throw e;
+      msg.textContent = `retrying… (${attempt + 1})`;
+      await new Promise(r => setTimeout(r, CONFIG.FETCH_RETRY_MS));
+    }
+  }
+}
+
+async function boot(){
+  const url = CONFIG.VIDEO_URL(SCREEN);
+  msg.textContent = `screen ${SCREEN} · loading`;
+  let blob;
+  try {
+    blob = await fetchVideoBlob(url, p => {
+      if (p == null){ barFill.style.width = '100%'; }
+      else { barFill.style.width = Math.round(p * 100) + '%'; }
+    });
+  } catch (e){
+    msg.textContent = `failed to load ${url}`;
+    return;
+  }
+
+  v.src = URL.createObjectURL(blob);
+  v.loop = true;
+
+  v.addEventListener('loadedmetadata', () => {
+    N = CONFIG.LOOP_SECONDS || v.duration;
+    if (!isFinite(N) || N <= 0) N = CONFIG.LOOP_SECONDS || 10; // fallback
+    try { v.currentTime = wallTarget(N); } catch(e){}
+    v.play().then(() => {
+      ready = true;
+      overlay.classList.add('hidden');
+    }).catch(() => {
+      // Autoplay blocked (e.g. testing on a laptop) — tap/key to start.
+      msg.textContent = 'tap to start';
+      const start = () => { v.play(); ready = true; overlay.classList.add('hidden');
+                            window.removeEventListener('click', start);
+                            window.removeEventListener('keydown', start); };
+      window.addEventListener('click', start);
+      window.addEventListener('keydown', start);
+    });
+  }, { once: true });
+}
+
+// ---- three-zone drift correction (mostly does nothing) ----
+setInterval(() => {
+  if (!ready || N == null) return;
+
+  const target = wallTarget(N);
+  let diff = target - v.currentTime;          // + = we're behind, - = we're ahead
+  if (diff >  N / 2) diff -= N;               // wrap-around at the loop seam
+  else if (diff < -N / 2) diff += N;
+  const ad = Math.abs(diff);
+
+  let action = 'hold';
+  if (ad > CONFIG.HARD_SEEK_S){
+    v.currentTime = target;                   // big gap (post-stall) -> jump once
+    v.playbackRate = 1.0; nudging = false; action = 'JUMP';
+  } else {
+    if (ad > CONFIG.DEAD_ZONE_S) nudging = true;       // start gentle correction
+    else if (ad < CONFIG.NUDGE_STOP_S) nudging = false; // settled -> stop (hysteresis)
+    v.playbackRate = nudging ? (1 + (diff > 0 ? 1 : -1) * CONFIG.NUDGE_RATE) : 1.0;
+    action = nudging ? (diff > 0 ? 'nudge+' : 'nudge-') : 'hold';
+  }
+
+  if (DEBUG){
+    dbg.textContent =
+      `screen ${SCREEN}  N=${N.toFixed(2)}s\n` +
+      `pos   ${v.currentTime.toFixed(2)}\n` +
+      `target${target.toFixed(2)}\n` +
+      `diff  ${diff >= 0 ? '+' : ''}${diff.toFixed(3)}s\n` +
+      `rate  ${v.playbackRate.toFixed(2)}  [${action}]`;
+  }
+}, CONFIG.CHECK_INTERVAL_MS);
+
+if (CONFIG.AUTO_RELOAD_MIN > 0){
+  setTimeout(() => location.reload(), CONFIG.AUTO_RELOAD_MIN * 60000);
+}
+
+boot();
+</script>
+</body>
+</html>
