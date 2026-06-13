@@ -105,6 +105,28 @@ class TestOutputDir:
         assert spec.output_dir is None
 
 
+# ─── per-prompt seed override ───────────────────────────────────────────
+
+class TestPerPromptSeed:
+    """Per-prompt ``seed:`` lets one prompt pin a different noise seed
+    than the experiment-wide default, useful when one prompt rolls a
+    poor noise pattern at the shared seed. None = inherit ``video.seed``."""
+
+    def test_seed_defaults_to_none(self, tmp_path):
+        spec = load_experiment(_write(tmp_path, MINIMAL))
+        assert all(p.seed is None for p in spec.prompts)
+
+    def test_per_prompt_seed_parses(self, tmp_path):
+        body = MINIMAL.replace(
+            "prompts:\n  - { name: a, text: A }",
+            "prompts:\n  - { name: a, text: A, seed: 201 }\n  - { name: b, text: B }",
+        )
+        spec = load_experiment(_write(tmp_path, body))
+        # Override on the first prompt, inherit on the second.
+        assert spec.prompts[0].seed == 201
+        assert spec.prompts[1].seed is None
+
+
 # ─── Required field validation ───────────────────────────────────────────
 
 class TestRequiredFields:
@@ -244,11 +266,11 @@ class TestRealExperiment:
         spec = load_experiment(path)
         assert spec.name == "type_cast_v1_ffn_output_scale_0"
         assert spec.model == "longlive"
-        assert spec.pipeline_init.width == 480
-        assert spec.pipeline_init.height == 800
+        assert spec.pipeline_init.width == 800
+        assert spec.pipeline_init.height == 480
         assert spec.video.frames == 161
-        assert spec.video.fps == 8
-        assert spec.video.seed == 100
+        assert spec.video.fps == 16
+        assert spec.video.seed == 102
         assert len(spec.prompts) == 2
         assert spec.prompts[0].name == "cowboy"
         assert spec.prompts[1].name == "femme"

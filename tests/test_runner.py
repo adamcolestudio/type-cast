@@ -135,14 +135,36 @@ class TestLiveRun:
         assert "ffn_layer_end" not in baseline_call
 
     def test_seed_constant_across_all_videos(self, tmp_path):
-        """Type Cast invariant: every video shares the seed so the only
-        cell-to-cell variable is the bend. Loop and verify."""
+        """Type Cast invariant when no per-prompt seed is set: every
+        video shares ``video.seed`` so the only cell-to-cell variable
+        is the bend. Loop and verify."""
         adapter = StubAdapter(layer_count=30)
         spec = _spec(n_prompts=2, baseline=True)
         with patch("generator.runner.encode.encode_video"):
             run_experiment(spec, adapter=adapter, output_root=tmp_path, dry_run=False)
         seeds = {call["seed"] for call in adapter.generate_calls}
         assert seeds == {100}
+
+    def test_per_prompt_seed_overrides_video_seed(self, tmp_path):
+        """When ``PromptSpec.seed`` is set, it wins over ``video.seed``
+        for ALL of that prompt's videos (every band + baseline). Other
+        prompts in the same experiment still inherit ``video.seed``."""
+        adapter = StubAdapter(layer_count=30)
+        spec = _spec(n_prompts=2, baseline=True)
+        # Pin a new seed on prompt 1; leave prompt 0 inheriting.
+        spec.prompts[1].seed = 999
+
+        with patch("generator.runner.encode.encode_video"):
+            run_experiment(spec, adapter=adapter, output_root=tmp_path, dry_run=False)
+
+        # Group seeds by prompt label captured in the band call kwargs.
+        # StubAdapter records calls in matrix order: prompt0 bands+baseline
+        # then prompt1 bands+baseline (see test_matrix_order test).
+        n_videos_per_prompt = len(adapter.generate_calls) // 2
+        p0_seeds = {c["seed"] for c in adapter.generate_calls[:n_videos_per_prompt]}
+        p1_seeds = {c["seed"] for c in adapter.generate_calls[n_videos_per_prompt:]}
+        assert p0_seeds == {100}, "prompt 0 should still inherit video.seed"
+        assert p1_seeds == {999}, "prompt 1 should use its per-prompt seed for every video"
 
 
 # ─── Filesystem layout ──────────────────────────────────────────────────

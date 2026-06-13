@@ -191,7 +191,9 @@ def _build_call_kwargs(
         # test.py reference. For text mode the weight is the standard
         # 100. Future adapters may translate.
         "prompts": [{"text": prompt.text, "weight": 100}],
-        "seed": spec.video.seed,
+        # Per-prompt seed overrides the experiment-wide default. Useful
+        # when one prompt rolls a poor noise pattern at the shared seed.
+        "seed": prompt.seed if prompt.seed is not None else spec.video.seed,
         # bending_base is the constant scaffolding — e.g.
         # ``{"bending_enabled": true, "ffn_output_scale": 0.0}``.
         # For the baseline we still want bending_base, but override

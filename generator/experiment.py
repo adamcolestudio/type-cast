@@ -51,6 +51,13 @@ class VideoSpec:
 class PromptSpec:
     name: str                    # short slug for filenames (e.g. "cowboy")
     text: str                    # the actual prompt fed to the encoder
+    # Optional per-prompt seed override. None = inherit ``VideoSpec.seed``
+    # (the experiment-wide default). Use when one prompt happens to roll
+    # an unlucky noise pattern at the shared seed and you want to pin a
+    # better one without re-seeding the whole sweep. The resolved seed
+    # (per-prompt OR inherited) lands in the manifest as ``video.seed``
+    # of each generated video so reproducibility is preserved.
+    seed: int | None = None
 
 
 @dataclass
@@ -178,7 +185,11 @@ def _parse_prompts(raw: list, source: Path) -> list[PromptSpec]:
             raise ExperimentLoadError(
                 f"{source}: prompts[{i}] needs both 'name' and 'text' keys"
             )
-        out.append(PromptSpec(name=str(item["name"]), text=str(item["text"])))
+        out.append(PromptSpec(
+            name=str(item["name"]),
+            text=str(item["text"]),
+            seed=_optional_int(item.get("seed")),
+        ))
     return out
 
 
