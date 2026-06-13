@@ -55,3 +55,6 @@ Backups.backupdb
 .MobileBackups.trash
 MobileBackups.trash
 tmbootpicker.efi
+
+# Local Netlify folder
+.netlify

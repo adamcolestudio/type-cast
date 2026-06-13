@@ -4,7 +4,7 @@
 # Identical on every Pi; each Pi differs only by /boot/screen.txt (the number).
 
 # ====== EDIT THIS ONE LINE ======
-BASE_URL="https://YOUR-SITE.netlify.app/"
+BASE_URL="https://type-cast-screens.netlify.app/"
 # ================================
 
 # --- which screen am I? read a number from the boot (FAT) partition ---
