@@ -73,3 +73,7 @@ tmbootpicker.efi
 
 # Local Netlify folder
 .netlify
+
+# Video assets — deployed to Netlify via CLI (netlify deploy --dir), NOT stored
+# in git: too large for GitHub's 100MB/file limit, and regenerable from frames.
+*.mp4
