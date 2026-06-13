@@ -1,0 +1,59 @@
+# Type Cast smoke-test experiment — fast, low-cost end-to-end verification.
+#
+# Use to confirm the env, the bender hooks, and the encode chain all work
+# on the GPU box BEFORE committing ~40 GPU minutes to the full canonical
+# experiment. Matches the canonical YAML's shape exactly — only the matrix
+# size + frame count differ — so passing this run gives high confidence the
+# canonical run will too.
+#
+# Matrix: 2 prompts × (2 bands + 1 baseline) = 6 videos.
+# Bands: stride 14 window 3 over a 30-layer model → start positions {0, 14},
+#        so band-00 deforms layers 0,1,2 (deep into the bottom of the
+#        network) and band-14 deforms layers 14,15,16 (mid-stack). Visually
+#        distinct deformations + a baseline make defects obvious.
+# Frames: 49 (≈6.1s at 8 fps). Long enough to exercise the AR chunk-loop
+#         meaningfully (~16 chunks at LongLive's 3-frames-per-block default)
+#         while keeping per-video wall-clock to ~3s on a 4090-class GPU.
+#
+# Expected wall-clock: ~6 videos × ~5s gen + ~1s encode = under a minute.
+# Disk: ~6 × ~1 MB at the test resolution = trivial.
+
+name: type_cast_smoke_test
+model: longlive
+
+pipeline_init:
+  width: 480
+  height: 800
+
+video:
+  frames: 49           # ~6s at 8 fps; ≈16 AR chunks at default block size
+  fps: 8
+  seed: 100            # same as canonical so reproducible visually
+  encode_crf: 16
+  keep_frames: false
+
+prompts:
+  - name: cowboy
+    text: "Close-up of a handsome western cowboy, he pulls out his gun, in a classic Hollywood western film"
+  - name: femme
+    text: "Close-up of a glamorous starlet putting on red lipstick in a classic Hollywood 1940s melodrama film"
+
+bending_base:
+  bending_enabled: true
+  ffn_output_scale: 0.0
+
+# Two bands far apart in the network — fastest way to see a visible delta
+# between bands. With stride 14 across 30 layers: starts at {0, 14}, both
+# bands are 3 layers wide.
+sweep:
+  kind: ffn_layer
+  stride: 14
+  window: 3
+
+baseline:
+  per_prompt: true
+  position: end
+
+# Concat-merge per prompt — verifies the ffmpeg concat path works end-to-end
+# so the canonical run can rely on it.
+merge: true
