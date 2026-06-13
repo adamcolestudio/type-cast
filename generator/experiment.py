@@ -73,6 +73,13 @@ class ExperimentSpec:
     sweep: Sweep                 # what varies cell-to-cell
     baseline: BaselineSpec
     merge: bool = False          # if true, concat all per-prompt videos into one mp4
+    # Where to write the experiment-run folder. None = the CLI default
+    # (``<yaml-dir>/../output/``). Set to an absolute path (e.g. an
+    # external SSD mount) when local disk is tight or you want runs to
+    # live alongside other archival assets. Relative paths resolve
+    # against the YAML file's parent directory so the experiment stays
+    # self-contained when moved. CLI ``--output`` overrides this.
+    output_dir: str | None = None
 
     def total_video_count(self, *, layer_count: int) -> int:
         """How many videos this experiment will produce — useful for the
@@ -131,11 +138,12 @@ def _parse_experiment(raw: dict, *, source: Path) -> ExperimentSpec:
     sweep = _parse_sweep(_require(raw, "sweep", ""), source)
     baseline = _parse_baseline(raw.get("baseline") or {}, source)
     merge = bool(raw.get("merge", False))
+    output_dir = _optional_str(raw.get("output_dir"))
 
     return ExperimentSpec(
         name=name, model=model, pipeline_init=pipeline_init, video=video,
         prompts=prompts, bending_base=bending_base, sweep=sweep,
-        baseline=baseline, merge=merge,
+        baseline=baseline, merge=merge, output_dir=output_dir,
     )
 
 
@@ -208,3 +216,13 @@ def _optional_int(v) -> int | None:
     if v is None:
         return None
     return int(v)
+
+
+def _optional_str(v) -> str | None:
+    """``None`` and empty-string both map to None — operators sometimes
+    write ``device: ""`` in YAML to mean "default" which would otherwise
+    pass through as a non-None empty string and break the precedence."""
+    if v is None:
+        return None
+    s = str(v).strip()
+    return s or None

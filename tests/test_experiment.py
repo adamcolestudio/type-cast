@@ -70,6 +70,40 @@ class TestMinimal:
         spec = load_experiment(_write(tmp_path, MINIMAL))
         assert spec.bending_base == {}
 
+    def test_output_dir_defaults_to_none(self, tmp_path):
+        """Null default means the CLI falls back to its sibling-of-yaml
+        convention — unchanged from the original behavior."""
+        spec = load_experiment(_write(tmp_path, MINIMAL))
+        assert spec.output_dir is None
+
+
+# ─── output_dir field ────────────────────────────────────────────────────
+
+class TestOutputDir:
+    """Pins the YAML field that lets an experiment redirect its outputs
+    (e.g. to an external SSD) without a CLI flag."""
+
+    def test_absolute_path_parses(self, tmp_path):
+        body = MINIMAL + "\noutput_dir: /mnt/ssd/typecast_runs\n"
+        spec = load_experiment(_write(tmp_path, body))
+        assert spec.output_dir == "/mnt/ssd/typecast_runs"
+
+    def test_tilde_path_parses(self, tmp_path):
+        """``~/outputs/`` is a common operator shorthand. The parser
+        keeps the literal string; the CLI does the ``expanduser`` at
+        resolve time so the manifest records the as-typed value."""
+        body = MINIMAL + "\noutput_dir: ~/typecast_runs\n"
+        spec = load_experiment(_write(tmp_path, body))
+        assert spec.output_dir == "~/typecast_runs"
+
+    def test_empty_string_maps_to_none(self, tmp_path):
+        """An operator might write ``output_dir: ""`` to "unset" the
+        field; that should fall back to the CLI default, not pass an
+        empty string downstream."""
+        body = MINIMAL + '\noutput_dir: ""\n'
+        spec = load_experiment(_write(tmp_path, body))
+        assert spec.output_dir is None
+
 
 # ─── Required field validation ───────────────────────────────────────────
 

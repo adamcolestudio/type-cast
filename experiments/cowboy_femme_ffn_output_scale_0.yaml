@@ -50,3 +50,8 @@ baseline:
   position: end
 
 merge: true             # concat per-prompt videos into a single mp4
+
+# Optional — where the experiment-run folder lands. Defaults to
+# ``<yaml-dir>/../output/``. Set to an absolute path (e.g. an external
+# SSD mount) when local disk is tight. ``--output`` CLI flag overrides.
+# output_dir: /home/adam/mnt/ssd/typecast_runs

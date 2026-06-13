@@ -42,6 +42,39 @@ def main(argv: list[str] | None = None) -> int:
 
 # ── Subcommand handlers ─────────────────────────────────────────────────
 
+def resolve_output_root(
+    *,
+    yaml_path: Path,
+    cli_output: str | None,
+    spec_output_dir: str | None,
+) -> Path:
+    """Three-way precedence for the experiment-run output root.
+
+    Order: CLI flag > YAML ``output_dir`` > sibling-of-yaml default.
+
+    Tilde expansion (``~/foo``) happens here so the YAML records the
+    operator's literal string and the manifest does too — useful for
+    "where did this output go" forensics. Relative paths in the YAML
+    resolve against the YAML file's parent directory so an experiment
+    moved to a different repo keeps producing outputs in the expected
+    spot relative to itself.
+
+    Returns:
+        Absolute :class:`Path` to the output ROOT (the per-run
+        ``<name>_<stamp>/`` folder is created underneath by the runner).
+    """
+    if cli_output:
+        return Path(cli_output).expanduser().resolve()
+    if spec_output_dir:
+        candidate = Path(spec_output_dir).expanduser()
+        if candidate.is_absolute():
+            return candidate.resolve()
+        return (yaml_path.parent / candidate).resolve()
+    # Default: ``<yaml-dir>/../output/`` — keeps experiments/ + output/
+    # as siblings, which is the layout in this repo's README.
+    return (yaml_path.parent.parent / "output").resolve()
+
+
 def _cmd_run(args) -> int:
     from .experiment import load_experiment, ExperimentLoadError
     from .pipeline_factory import build_adapter
@@ -53,14 +86,11 @@ def _cmd_run(args) -> int:
         print(f"[type-cast] error: {e}", file=sys.stderr)
         return 1
 
-    # Resolve output root. CLI flag wins; otherwise the spec lives next
-    # to its YAML and we write to ``<yaml-dir>/../output/`` so experiments
-    # and outputs share a tidy sibling pair under the repo root.
-    if args.output:
-        output_root = Path(args.output)
-    else:
-        yaml_path = Path(args.experiment).resolve()
-        output_root = yaml_path.parent.parent / "output"
+    output_root = resolve_output_root(
+        yaml_path=Path(args.experiment).resolve(),
+        cli_output=args.output,
+        spec_output_dir=spec.output_dir,
+    )
 
     try:
         adapter = build_adapter(spec, device=args.device, stub=args.dry_run)
