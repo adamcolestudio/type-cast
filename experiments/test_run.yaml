@@ -24,11 +24,12 @@ model: longlive
 pipeline_init:
   width: 800
   height: 480
+  num_frame_per_block: 6
 
 video:
-  frames: 81           # ~6s at 8 fps; ≈16 AR chunks at default block size
-  fps: 8
-  seed: 101            # same as canonical so reproducible visually
+  frames: 161           # ~6s at 8 fps; ≈16 AR chunks at default block size
+  fps: 16
+  seed: 102           # same as canonical so reproducible visually
   encode_crf: 16
   keep_frames: false
 
