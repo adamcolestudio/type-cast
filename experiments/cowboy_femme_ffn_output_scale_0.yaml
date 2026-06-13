@@ -10,25 +10,25 @@ name: type_cast_v1_ffn_output_scale_0
 model: longlive
 
 pipeline_init:
-  width: 480
-  height: 800
-  # Optional LongLive AR knobs — uncomment to override scope's defaults.
-  # num_frame_per_block: 3
-  # local_attn_size: 12
-  # sink_size: 3
+  width: 800
+  height: 480
+  # Optional LongLive AR knobs — uncomment to override scope's defaults and use single chunk, set frames to 81 and fps to 8
+  # num_frame_per_block: 21
+  # local_attn_size: 21
+  # sink_size: 3 --> skip this
 
 video:
-  frames: 161         # ~20 s at 8 fps; matches your SETUP.md target
-  fps: 8              # Pi 3B+ baseline (experimental per SETUP.md)
-  seed: 100           # held constant across the entire matrix
+  frames: 161         # ~10 s at 16 fps; matches your SETUP.md target
+  fps: 16              # Pi 3B+ baseline (experimental per SETUP.md)
+  seed: 102           # held constant across the entire matrix
   encode_crf: 16      # SETUP.md baseline; lower = better quality
   keep_frames: false  # set true to archive raw PNGs next to each mp4
 
 prompts:
   - name: cowboy
-    text: "Close-up of a handsome western cowboy, he pulls out his gun, in a classic Hollywood western film"
+    text: "Close-up of a handsome western cowboy, he pulls out his gun, in a classic Hollywood western film, cinematic"
   - name: femme
-    text: "Close-up of a glamorous starlet putting on red lipstick in a classic Hollywood 1940s melodrama film"
+    text: "Close-up of a glamorous femme fatale on red lipstick in a classic Hollywood 1940s melodrama film, cinematic"
 
 # The DEFORMATION — applied identically to every band video. The sweep
 # below dictates WHICH layers it acts on per video.

@@ -25,7 +25,7 @@ pipeline_init:
   width: 800
   height: 480
   num_frame_per_block: 21
-  local_attn_size: -1
+  local_attn_size: 21
 
 video:
   frames: 81           # ~6s at 8 fps; ≈16 AR chunks at default block size
