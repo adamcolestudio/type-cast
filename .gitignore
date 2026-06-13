@@ -1,6 +1,18 @@
 # General
 .DS_Store
 .localized
+
+# Type Cast generator — Python build + runtime outputs
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+.venv/
+
+# Generated experiment outputs (large; reproducible via YAML + bender SHA)
+output/
 __MACOSX/
 .AppleDouble
 .LSOverride
