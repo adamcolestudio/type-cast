@@ -271,11 +271,17 @@ class TestRealExperiment:
         assert spec.video.frames == 161
         assert spec.video.fps == 16
         assert spec.video.seed == 102
-        assert len(spec.prompts) == 2
+        # Canonical YAML expanded into a full preview palette; pin only
+        # the first two slots (the original pair) so the test survives
+        # further prompt additions without becoming a churn magnet.
+        assert len(spec.prompts) >= 2
         assert spec.prompts[0].name == "cowboy"
         assert spec.prompts[1].name == "femme"
         assert spec.bending_base["ffn_output_scale"] == 0.0
         assert spec.merge is True
         assert spec.baseline.per_prompt is True
-        # Sanity-check the matrix size on the canonical sweep parameters
-        assert spec.total_video_count(layer_count=30) == 2 * (28 + 1)
+        # Sanity-check the matrix size: the canonical sweep produces
+        # 28 sliding 3-wide bands over 30 FFN layers, plus 1 baseline
+        # per prompt. Total = n_prompts × (28 + 1).
+        n = len(spec.prompts)
+        assert spec.total_video_count(layer_count=30) == n * (28 + 1)

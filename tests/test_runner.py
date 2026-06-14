@@ -298,3 +298,104 @@ class TestSweepFailure:
             )
         # One band → one band-video (+ baseline = 2 generations)
         assert len(adapter.generate_calls) == 2
+
+
+# ─── --baseline-only preview mode ───────────────────────────────────────
+
+class TestBaselineOnly:
+    """The flag exists for prompt-tuning: render JUST the baselines so
+    the operator can preview how each prompt looks before committing to
+    a full sweep. Three invariants worth pinning:
+
+      * Bands are skipped entirely — exactly len(prompts) videos out
+      * Merge is suppressed even when spec.merge=True (no preview reel
+        when each prompt produces a single video — would be misleading)
+      * Misconfig (baseline.per_prompt=false + baseline_only=true) errors
+        loudly BEFORE generating, so the operator can't get 0 videos and
+        wonder where they went
+    """
+
+    def test_dry_run_skips_bands_and_logs_only_baselines(self, tmp_path, caplog):
+        adapter = StubAdapter(layer_count=30)
+        spec = _spec(n_prompts=3, baseline=True)   # full would be 3 × 5 = 15
+        with caplog.at_level("INFO"):
+            run_experiment(
+                spec, adapter=adapter, output_root=tmp_path,
+                dry_run=True, baseline_only=True,
+            )
+        # No adapter calls in dry-run regardless
+        assert adapter.generate_calls == []
+        # The header line should announce baseline-only mode AND 0 bands
+        header = next(r for r in caplog.records if "experiment" in r.message)
+        assert "BASELINE-ONLY" in header.message
+        assert "3 videos" in header.message            # 3 prompts × 1 baseline each
+        assert "0 bands" in header.message
+
+    def test_live_run_generates_one_video_per_prompt(self, tmp_path):
+        adapter = StubAdapter(layer_count=30)
+        spec = _spec(n_prompts=3, baseline=True)
+        called_paths: list[Path] = []
+        with patch(
+            "generator.runner.encode.encode_video",
+            side_effect=lambda frames, path, **kw: called_paths.append(path),
+        ):
+            run_experiment(
+                spec, adapter=adapter, output_root=tmp_path,
+                dry_run=False, baseline_only=True,
+            )
+        # Exactly one video per prompt, each named *_baseline.mp4
+        assert len(called_paths) == 3
+        assert all(p.name.endswith("_baseline.mp4") for p in called_paths)
+
+    def test_baseline_only_kwargs_match_normal_baseline(self, tmp_path):
+        """Sanity: the videos generated under --baseline-only carry
+        EXACTLY the same kwargs they would in a full run's baseline
+        slot — bending_enabled=false, no ffn_layer_* keys. Operators
+        rely on this to trust the preview reflects real baseline output."""
+        adapter = StubAdapter(layer_count=30)
+        spec = _spec(n_prompts=2, baseline=True)
+        with patch("generator.runner.encode.encode_video"):
+            run_experiment(
+                spec, adapter=adapter, output_root=tmp_path,
+                dry_run=False, baseline_only=True,
+            )
+        for call in adapter.generate_calls:
+            assert call["bending_enabled"] is False
+            assert "ffn_layer_start" not in call
+            assert "ffn_layer_end" not in call
+
+    def test_merge_is_suppressed_under_baseline_only(self, tmp_path):
+        """Even with spec.merge=True, no concat happens — each prompt
+        produces exactly one video, so a "merge" would be a misleading
+        rename. The operator wanted a preview, not a reel."""
+        adapter = StubAdapter(layer_count=30)
+        spec = _spec(n_prompts=2, baseline=True, merge=True)
+        with patch("generator.runner.encode.encode_video"), \
+             patch("generator.runner.encode.concat_videos") as concat:
+            run_experiment(
+                spec, adapter=adapter, output_root=tmp_path,
+                dry_run=False, baseline_only=True,
+            )
+        concat.assert_not_called()
+
+    def test_raises_when_baseline_disabled(self, tmp_path):
+        """With baseline.per_prompt=false the flag would produce 0
+        videos — surface this as a loud error before any I/O or model
+        load happens, so the operator can fix the YAML in seconds."""
+        adapter = StubAdapter(layer_count=30)
+        spec = _spec(n_prompts=2, baseline=False)
+        with pytest.raises(ValueError, match="baseline.per_prompt"):
+            run_experiment(
+                spec, adapter=adapter, output_root=tmp_path,
+                dry_run=False, baseline_only=True,
+            )
+
+    def test_total_video_count_method_honors_flag(self):
+        """``ExperimentSpec.total_video_count`` is used by the runner's
+        progress counter and the CLI's pre-flight cost estimate — both
+        need to report the smaller preview count, not the full sweep."""
+        spec = _spec(n_prompts=4, baseline=True)
+        # Full sweep: 4 prompts × (4 bands + 1 baseline) = 20
+        assert spec.total_video_count(layer_count=30) == 20
+        # Baseline-only: 4 prompts × 1 baseline = 4
+        assert spec.total_video_count(layer_count=30, baseline_only=True) == 4

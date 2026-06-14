@@ -106,7 +106,8 @@ def _cmd_run(args) -> int:
 
     try:
         exp_dir = run_experiment(
-            spec, adapter=adapter, output_root=output_root, dry_run=args.dry_run,
+            spec, adapter=adapter, output_root=output_root,
+            dry_run=args.dry_run, baseline_only=args.baseline_only,
         )
     except Exception as e:                                     # noqa: BLE001
         logging.exception("[type-cast] FAILED — %s", e)
@@ -160,6 +161,13 @@ def _build_parser() -> argparse.ArgumentParser:
     run.add_argument(
         "--dry-run", action="store_true",
         help="walk the matrix with a stub adapter — no model, no encode, no I/O",
+    )
+    run.add_argument(
+        "--baseline-only", action="store_true",
+        help="skip the band sweep entirely; only generate the per-prompt "
+             "baseline videos. Useful for previewing prompt rendering before "
+             "burning a full sweep. Requires baseline.per_prompt=true. "
+             "When set, merge: is ignored (no preview reel).",
     )
 
     val = subs.add_parser("validate", help="Parse + echo an experiment YAML")

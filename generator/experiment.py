@@ -88,10 +88,17 @@ class ExperimentSpec:
     # self-contained when moved. CLI ``--output`` overrides this.
     output_dir: str | None = None
 
-    def total_video_count(self, *, layer_count: int) -> int:
+    def total_video_count(self, *, layer_count: int, baseline_only: bool = False) -> int:
         """How many videos this experiment will produce — useful for the
-        runner's progress bar and the CLI's pre-flight cost estimate."""
-        bands = sum(1 for _ in self.sweep.iter_bands(layer_count=layer_count))
+        runner's progress bar and the CLI's pre-flight cost estimate.
+
+        ``baseline_only`` mirrors the runner's CLI flag: when True, the
+        sweep contributes zero bands and only the per-prompt baseline
+        counts. (Caller must still validate that ``baseline.per_prompt``
+        is True under this mode — otherwise the count is 0.)"""
+        bands = 0 if baseline_only else sum(
+            1 for _ in self.sweep.iter_bands(layer_count=layer_count)
+        )
         per_prompt = bands + (1 if self.baseline.per_prompt else 0)
         return per_prompt * len(self.prompts)
 

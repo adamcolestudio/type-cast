@@ -34,6 +34,7 @@ def run_experiment(
     adapter: VideoGenerator,
     output_root: Path,
     dry_run: bool = False,
+    baseline_only: bool = False,
 ) -> Path:
     """Execute one experiment end-to-end. Returns the experiment-run
     folder path so the caller can print it / open it / rsync it.
@@ -49,25 +50,40 @@ def run_experiment(
             The runner walks the matrix and logs every operation it
             WOULD perform. Use to validate YAML + naming + folder layout
             without burning a GPU minute.
+        baseline_only: When True, skip the band sweep entirely and only
+            generate the per-prompt baseline videos. Use to preview how
+            each prompt renders before committing to a full sweep. The
+            band loop AND ``spec.merge`` are both skipped — a preview
+            reel doesn't make sense for one-video-per-prompt output.
 
     Returns:
         Path to the created (or, in dry-run, would-be-created) experiment
         folder.
     """
     layer_count = adapter.model_layer_count
-    bands = list(spec.sweep.iter_bands(layer_count=layer_count))
-    if not bands:
-        raise ValueError(
-            f"sweep produced 0 bands (layer_count={layer_count}, "
-            f"sweep={spec.sweep}). Check sweep.window vs sweep.layer_end."
-        )
+    if baseline_only:
+        if not spec.baseline.per_prompt:
+            raise ValueError(
+                "--baseline-only requires baseline.per_prompt=true; the "
+                "current YAML disables baselines, which would produce 0 "
+                "videos. Either flip baseline.per_prompt or drop the flag."
+            )
+        bands: list = []   # band loop will simply not iterate
+    else:
+        bands = list(spec.sweep.iter_bands(layer_count=layer_count))
+        if not bands:
+            raise ValueError(
+                f"sweep produced 0 bands (layer_count={layer_count}, "
+                f"sweep={spec.sweep}). Check sweep.window vs sweep.layer_end."
+            )
 
     exp_dir = output_root / naming.experiment_dir_name(spec.name)
-    total = spec.total_video_count(layer_count=layer_count)
+    total = spec.total_video_count(layer_count=layer_count, baseline_only=baseline_only)
     logger.info(
-        "[type-cast] experiment '%s' → %s (%d videos: %d prompts × (%d bands + %d baselines))",
+        "[type-cast] experiment '%s' → %s (%d videos: %d prompts × (%d bands + %d baselines))%s",
         spec.name, exp_dir, total, len(spec.prompts), len(bands),
         1 if spec.baseline.per_prompt else 0,
+        " [BASELINE-ONLY preview]" if baseline_only else "",
     )
 
     if not dry_run:
@@ -113,7 +129,10 @@ def run_experiment(
                 )
 
         # --- per-prompt concat-merge ---
-        if spec.merge:
+        # Honored only for full runs — a baseline-only preview produces
+        # one video per prompt, so a "merge" is just a no-op rename and
+        # would mislead the operator into thinking they had a full reel.
+        if spec.merge and not baseline_only:
             merged_path = prompt_dir / naming.merged_filename(idx)
             if dry_run:
                 logger.info("[dry-run] would concat-merge %d files → %s",
