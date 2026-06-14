@@ -44,6 +44,7 @@ const CONFIG = {
 
   // --- Display ---
   OBJECT_FIT: 'cover',       // 'cover' (fill, may crop) | 'contain' (letterbox) | 'fill'
+  ROTATE: 90,                 // 0 | 90 | 180 | 270 (clockwise). ?rotate=N overrides per-URL.
   MUTED: true,               // must be true for kiosk autoplay (unless chromium flag set)
 
   // --- Robustness ---
@@ -67,6 +68,32 @@ const barFill = document.querySelector('#bar > i');
 const dbg = document.getElementById('dbg');
 if (DEBUG) dbg.style.display = 'block';
 v.muted = CONFIG.MUTED;
+
+// ---- rotation: show a portrait clip on a landscape-mounted panel (or vice
+// versa) without rotating the whole OS. Per-URL override: ?rotate=90
+// PIXEL-EXACT (1:1, no scaling) when the clip's resolution equals the panel's
+// POST-rotation resolution — e.g. a 480x800 clip on an 800x480 panel turned 90°.
+// A quarter-turn is an axis-aligned remap, so it doesn't resample the image. ----
+const rotateParam = parseInt(params.get('rotate'), 10);
+const ROTATE = [0, 90, 180, 270].includes(rotateParam) ? rotateParam : (CONFIG.ROTATE || 0);
+applyRotation(ROTATE);
+
+function applyRotation(deg){
+  if (deg === 90 || deg === 270){
+    // Swap the element's box to the viewport's height×width and center it, so a
+    // quarter-turn lands it back over the full viewport with no scaling.
+    v.style.width  = '100vh';   // pre-rotation width  = viewport HEIGHT
+    v.style.height = '100vw';   // pre-rotation height = viewport WIDTH
+    v.style.top = '50%';  v.style.left = '50%';
+    v.style.right = 'auto'; v.style.bottom = 'auto';
+    v.style.transform = `translate(-50%, -50%) rotate(${deg}deg)`;
+  } else {
+    v.style.width = '100%'; v.style.height = '100%';
+    v.style.top = '0';  v.style.left = '0';
+    v.style.right = '0'; v.style.bottom = '0';
+    v.style.transform = deg === 180 ? 'rotate(180deg)' : 'none';
+  }
+}
 
 let N = null;          // resolved loop length
 let ready = false;
