@@ -25,7 +25,7 @@ import pytest
 from generator.experiment import (
     BaselineSpec, ExperimentSpec, PipelineInit, PromptSpec, VideoSpec,
 )
-from generator.pipeline_factory import StubAdapter
+from generator.pipeline_factory import StubAdapter, _longlive_call_kwargs
 from generator.runner import run_experiment
 from generator.sweep import FFNLayerSweep, SeedSweep
 
@@ -458,3 +458,29 @@ class TestSeedSweep:
             ("seed-100", 100),
             ("seed-101", 101),
         ]
+
+
+# ─── Seed kwarg translation (the "all videos identical" bug) ────────────
+
+class TestSeedTranslation:
+    """Regression guard: scope seeds each video from `base_seed`, but the
+    runner emits the generic `seed`. LongLiveAdapter must rename it, or
+    every video reuses the construction-time seed and the sweep is a no-op.
+    """
+
+    def test_seed_renamed_to_base_seed(self):
+        out = _longlive_call_kwargs({"seed": 107, "prompts": [{"text": "x"}]})
+        assert out["base_seed"] == 107
+        assert "seed" not in out
+        assert out["prompts"] == [{"text": "x"}]   # other kwargs untouched
+
+    def test_does_not_mutate_input(self):
+        """The runner reuses the same dict to write the manifest, which
+        records `seed` — so the translation must not mutate it."""
+        src = {"seed": 100}
+        _longlive_call_kwargs(src)
+        assert src == {"seed": 100}
+
+    def test_passthrough_when_no_seed(self):
+        out = _longlive_call_kwargs({"prompts": [], "bending_enabled": False})
+        assert out == {"prompts": [], "bending_enabled": False}

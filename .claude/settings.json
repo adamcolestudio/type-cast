@@ -3,7 +3,8 @@
     "allow": [
       "Bash(python -m pytest tests/test_experiment.py tests/test_runner.py -q)",
       "Bash(python -m generator.cli validate experiments/seed_hunt.yaml)",
-      "Bash(python -m generator.cli run experiments/seed_hunt.yaml --dry-run)"
+      "Bash(python -m generator.cli run experiments/seed_hunt.yaml --dry-run)",
+      "Bash(python -m pytest tests/test_runner.py tests/test_experiment.py -q)"
     ]
   }
 }

@@ -55,6 +55,25 @@ class VideoGenerator(Protocol):
 
 # ─── LongLive — production adapter ────────────────────────────────────────
 
+def _longlive_call_kwargs(kwargs: dict) -> dict:
+    """Translate the runner's generic per-call kwargs into LongLive/scope's
+    names.
+
+    Scope seeds each video's noise from ``base_seed`` — its pipeline writes
+    every incoming kwarg into state (``_generate``: ``for k, v in kwargs:
+    state.set(k, v)``), so a per-call ``base_seed`` overrides the
+    construction-time default. The runner emits the *generic* ``seed``;
+    without this rename scope never sees it, falls back to the construction
+    seed, and EVERY video comes out identical no matter what the sweep does.
+
+    Copies (doesn't mutate) the dict so the manifest still records ``seed``.
+    """
+    out = dict(kwargs)
+    if "seed" in out:
+        out["base_seed"] = out.pop("seed")
+    return out
+
+
 class LongLiveAdapter:
     """Drives the bender's LongLive pipeline via the autoregressive driver.
 
@@ -131,7 +150,7 @@ class LongLiveAdapter:
         )
         return generate_autoregressive_video(
             self._pipeline,
-            kwargs=kwargs,
+            kwargs=_longlive_call_kwargs(kwargs),
             target_frames=target_frames,
             on_chunk=on_chunk,
         )
