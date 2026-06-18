@@ -19,7 +19,7 @@ from generator.experiment import (
     ExperimentSpec,
     load_experiment,
 )
-from generator.sweep import FFNLayerSweep
+from generator.sweep import FFNLayerSweep, SeedSweep
 
 
 def _write(tmp_path: Path, body: str) -> Path:
@@ -211,6 +211,105 @@ sweep:
         assert spec.sweep.window == 3
         assert spec.sweep.layer_start == 0
         assert spec.sweep.layer_end is None
+
+
+# ─── Seed sweep (the seed-hunt path) ──────────────────────────────────────
+
+class TestSeedSweep:
+    """``kind: seed`` varies only the RNG seed per cell. Accepts an
+    explicit list or a start/count[/step] range; each seed becomes a band
+    named ``seed-<value>`` whose override pins that seed."""
+
+    def test_explicit_seed_list_parses(self, tmp_path):
+        body = """
+name: t
+model: longlive
+prompts:
+  - { name: a, text: A }
+bending_base: { bending_enabled: false }
+sweep:
+  kind: seed
+  seeds: [100, 101, 102]
+baseline: { per_prompt: false }
+"""
+        spec = load_experiment(_write(tmp_path, body))
+        assert isinstance(spec.sweep, SeedSweep)
+        assert spec.sweep.seeds == [100, 101, 102]
+        bands = list(spec.sweep.iter_bands(layer_count=30))
+        assert [b.name for b in bands] == ["seed-100", "seed-101", "seed-102"]
+        assert bands[0].overrides == {"seed": 100}
+
+    def test_range_shorthand_parses(self, tmp_path):
+        body = """
+name: t
+model: longlive
+prompts:
+  - { name: a, text: A }
+sweep:
+  kind: seed
+  start: 100
+  count: 4
+"""
+        spec = load_experiment(_write(tmp_path, body))
+        assert spec.sweep.seeds == [100, 101, 102, 103]
+
+    def test_range_step_parses(self, tmp_path):
+        body = """
+name: t
+model: longlive
+prompts:
+  - { name: a, text: A }
+sweep:
+  kind: seed
+  start: 100
+  count: 3
+  step: 5
+"""
+        spec = load_experiment(_write(tmp_path, body))
+        assert spec.sweep.seeds == [100, 105, 110]
+
+    def test_missing_seeds_and_range_raises(self, tmp_path):
+        body = """
+name: t
+model: longlive
+prompts:
+  - { name: a, text: A }
+sweep:
+  kind: seed
+"""
+        with pytest.raises(ExperimentLoadError, match="seed sweep needs"):
+            load_experiment(_write(tmp_path, body))
+
+    def test_empty_seed_list_raises(self, tmp_path):
+        body = """
+name: t
+model: longlive
+prompts:
+  - { name: a, text: A }
+sweep:
+  kind: seed
+  seeds: []
+"""
+        with pytest.raises(ExperimentLoadError, match="non-empty list"):
+            load_experiment(_write(tmp_path, body))
+
+    def test_total_video_count_counts_seeds(self, tmp_path):
+        """Each seed is a cell; with baseline off, count = seeds × prompts."""
+        body = """
+name: t
+model: longlive
+prompts:
+  - { name: a, text: A }
+  - { name: b, text: B }
+bending_base: { bending_enabled: false }
+sweep:
+  kind: seed
+  seeds: [1, 2, 3, 4]
+baseline: { per_prompt: false }
+"""
+        spec = load_experiment(_write(tmp_path, body))
+        # layer_count is irrelevant to a seed sweep; pass anything.
+        assert spec.total_video_count(layer_count=30) == 8
 
 
 # ─── File-level error reporting ──────────────────────────────────────────

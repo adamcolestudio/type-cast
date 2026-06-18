@@ -11,7 +11,7 @@ new dataclass + a single dispatch line in ``experiment._parse_sweep``.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Iterator, Protocol
 
 
@@ -102,3 +102,33 @@ class FFNLayerSweep:
                     "ffn_layer_end":   start + self.window - 1,
                 },
             )
+
+
+@dataclass
+class SeedSweep:
+    """Vary the RNG seed cell-to-cell, holding bending constant — the
+    "which seed renders this prompt best?" tool.
+
+    Pair with ``bending_base: {bending_enabled: false}`` for a pure
+    baseline seed hunt (no bend; only the noise seed changes), or leave a
+    bend enabled to find the best seed for that specific bend. Either way
+    each seed becomes one video named ``seed-<value>``, so the filename
+    (``prompt-NN_seed-<value>.mp4``) and the manifest both decode straight
+    back to the exact seed — pick the winner and pin it in ``video.seed``
+    (or a per-prompt ``seed:``) for the real run.
+
+    The seed lands in ``overrides`` and the runner merges band overrides
+    LAST, so it wins over ``video.seed`` / ``prompt.seed`` — exactly what
+    a hunt wants. ``layer_count`` is ignored (seeds don't depend on model
+    shape) but kept in the signature for :class:`Sweep` protocol parity.
+    """
+
+    seeds: list[int] = field(default_factory=list)
+
+    def __post_init__(self):
+        if not self.seeds:
+            raise ValueError("seed sweep needs at least one seed")
+
+    def iter_bands(self, *, layer_count: int) -> Iterator[BandSpec]:
+        for s in self.seeds:
+            yield BandSpec(name=f"seed-{s}", overrides={"seed": s})

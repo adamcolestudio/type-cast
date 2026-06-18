@@ -60,6 +60,9 @@ class Manifest:
             "prompt_name": prompt_name,
             "band_name": band_name,
             "is_baseline": is_baseline,
+            # Surfaced top-level (it's also inside kwargs) so a seed hunt's
+            # chosen output maps back to a number at a glance.
+            "seed": kwargs.get("seed"),
             "file": str(rel),
             "kwargs": _jsonable(kwargs),
         })

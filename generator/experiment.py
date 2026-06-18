@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from .sweep import FFNLayerSweep, Sweep
+from .sweep import FFNLayerSweep, SeedSweep, Sweep
 
 
 # ─── Sub-specs ───────────────────────────────────────────────────────────────
@@ -211,11 +211,39 @@ def _parse_sweep(raw: dict, source: Path) -> Sweep:
             layer_start=int(raw.get("layer_start", 0)),
             layer_end=_optional_int(raw.get("layer_end")),
         )
+    if kind == "seed":
+        return _parse_seed_sweep(raw, source)
     # When you add ``kind: linear`` (generic two-anchor interpolation),
     # dispatch here. Other planned kinds: ``neuron_stride``, ``param_range``.
     raise ExperimentLoadError(
-        f"{source}: unsupported sweep kind '{kind}'. Supported in v1: ffn_layer"
+        f"{source}: unsupported sweep kind '{kind}'. Supported in v1: ffn_layer, seed"
     )
+
+
+def _parse_seed_sweep(raw: dict, source: Path) -> SeedSweep:
+    """A seed sweep takes either an explicit ``seeds: [..]`` list or a
+    ``start`` + ``count`` (+ optional ``step``) range shorthand. The two
+    are mutually exclusive; an explicit list wins if both are present."""
+    seeds = raw.get("seeds")
+    if seeds is None:
+        if "count" not in raw:
+            raise ExperimentLoadError(
+                f"{source}: seed sweep needs either 'seeds' (a list) or "
+                f"'start'+'count' (a range)"
+            )
+        start = int(raw.get("start", 0))
+        count = int(raw["count"])
+        step = int(raw.get("step", 1))
+        if count < 1:
+            raise ExperimentLoadError(f"{source}: seed sweep 'count' must be >= 1")
+        seeds = list(range(start, start + count * step, step))
+    else:
+        if not isinstance(seeds, list) or not seeds:
+            raise ExperimentLoadError(
+                f"{source}: seed sweep 'seeds' must be a non-empty list"
+            )
+        seeds = [int(s) for s in seeds]
+    return SeedSweep(seeds=seeds)
 
 
 def _parse_baseline(d: dict, source: Path) -> BaselineSpec:

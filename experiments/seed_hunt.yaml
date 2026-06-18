@@ -1,0 +1,64 @@
+# Seed hunt — find the best RNG seed for each prompt BEFORE committing to a
+# full bending sweep.
+#
+# How it works: bending is held OFF (bending_base.bending_enabled: false) and
+# only the seed varies cell-to-cell (sweep kind: seed). So each output is a
+# pure baseline render at a different noise seed. Each video is named by its
+# seed — prompt-NN_seed-<value>.mp4 — and the seed is ALSO recorded in
+# manifest.json (top-level "seed" per video), so the file you pick maps
+# straight back to a number you can pin.
+#
+# Run it:
+#   type-cast run experiments/seed_hunt.yaml
+#   # Preview the matrix first, no GPU:
+#   type-cast run experiments/seed_hunt.yaml --dry-run
+#   # Sanity-check the parsed spec + video count:
+#   type-cast validate experiments/seed_hunt.yaml
+#
+# Then: eyeball the prompt-NN_seed-<value>.mp4 files, pick the best-looking
+# seed, and pin that number in your real experiment's `video.seed` (applies to
+# all prompts) or a per-prompt `seed:` (one prompt only).
+#
+# Matrix: 2 prompts x 8 seeds = 16 videos (no bands, no separate baseline).
+
+name: seed_hunt
+model: longlive
+
+pipeline_init:
+  width: 800
+  height: 480
+  num_frame_per_block: 21
+  local_attn_size: 21
+
+video:
+  frames: 81           # ~5s at 16 fps — long enough to judge a seed
+  fps: 16
+  seed: 100            # default/manifest seed; the sweep overrides it per-cell
+  encode_crf: 16
+
+prompts:
+  - name: cowboy
+    text: "Close-up of a handsome western cowboy, he pulls out his gun, in a classic Hollywood western film, cinematic"
+  - name: femme
+    text: "Close-up of a glamorous femme fatale putting on red lipstick in a classic Hollywood 1940s film noir, cinematic"
+
+# Bending OFF — this is a pure baseline seed hunt. (To instead find the best
+# seed for a SPECIFIC bend, enable bending here and add the bend's params,
+# e.g. ffn_output_scale, exactly as in your real experiment YAML.)
+bending_base:
+  bending_enabled: false
+
+# Vary the seed cell-to-cell. Either list seeds explicitly:
+sweep:
+  kind: seed
+  seeds: [100, 101, 102, 103, 104, 105, 106, 107]
+  # ...or use the range shorthand instead of the list above:
+  # start: 100
+  # count: 8
+  # step: 1
+
+# The seeds ARE the videos here, so no separate baseline is needed.
+baseline:
+  per_prompt: false
+
+merge: false

@@ -27,7 +27,7 @@ from generator.experiment import (
 )
 from generator.pipeline_factory import StubAdapter
 from generator.runner import run_experiment
-from generator.sweep import FFNLayerSweep
+from generator.sweep import FFNLayerSweep, SeedSweep
 
 
 def _spec(*, n_prompts: int = 2, baseline: bool = True, merge: bool = False) -> ExperimentSpec:
@@ -399,3 +399,62 @@ class TestBaselineOnly:
         assert spec.total_video_count(layer_count=30) == 20
         # Baseline-only: 4 prompts × 1 baseline = 4
         assert spec.total_video_count(layer_count=30, baseline_only=True) == 4
+
+
+# ─── Seed sweep (the seed-hunt path) ────────────────────────────────────
+
+class TestSeedSweep:
+    """A ``SeedSweep`` makes each cell a different seed with bending held
+    constant (off here). Verifies the seed reaches the adapter, lands in
+    the filename, and is recorded in the manifest — the three things that
+    let an operator map a chosen output back to a seed number."""
+
+    def _seed_spec(self, seeds: list[int]) -> ExperimentSpec:
+        return ExperimentSpec(
+            name="seed_hunt",
+            model="longlive",
+            pipeline_init=PipelineInit(width=64, height=48),
+            video=VideoSpec(frames=4, fps=8, seed=100, encode_crf=20),
+            prompts=[PromptSpec(name="cowboy", text="a cowboy")],
+            bending_base={"bending_enabled": False},
+            sweep=SeedSweep(seeds=seeds),
+            baseline=BaselineSpec(per_prompt=False, position="end"),
+            merge=False,
+        )
+
+    def test_each_cell_uses_its_seed_bending_stays_off(self, tmp_path):
+        adapter = StubAdapter(layer_count=30)
+        spec = self._seed_spec([100, 101, 102])
+        with patch("generator.runner.encode.encode_video"):
+            run_experiment(spec, adapter=adapter, output_root=tmp_path, dry_run=False)
+        assert [c["seed"] for c in adapter.generate_calls] == [100, 101, 102]
+        # No bend anywhere — this is a baseline hunt
+        assert all(c["bending_enabled"] is False for c in adapter.generate_calls)
+        assert all("ffn_layer_start" not in c for c in adapter.generate_calls)
+
+    def test_seed_lands_in_filename(self, tmp_path):
+        adapter = StubAdapter(layer_count=30)
+        spec = self._seed_spec([100, 101])
+        paths: list[Path] = []
+        with patch(
+            "generator.runner.encode.encode_video",
+            side_effect=lambda frames, path, **kw: paths.append(path),
+        ):
+            run_experiment(spec, adapter=adapter, output_root=tmp_path, dry_run=False)
+        assert [p.name for p in paths] == [
+            "prompt-01_seed-100.mp4",
+            "prompt-01_seed-101.mp4",
+        ]
+
+    def test_manifest_records_seed_per_video(self, tmp_path):
+        adapter = StubAdapter(layer_count=30)
+        spec = self._seed_spec([100, 101])
+        with patch("generator.runner.encode.encode_video"):
+            exp_dir = run_experiment(
+                spec, adapter=adapter, output_root=tmp_path, dry_run=False,
+            )
+        manifest = json.loads((exp_dir / "manifest.json").read_text())
+        assert [(v["band_name"], v["seed"]) for v in manifest["videos"]] == [
+            ("seed-100", 100),
+            ("seed-101", 101),
+        ]
