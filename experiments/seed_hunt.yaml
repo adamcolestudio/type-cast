@@ -27,11 +27,11 @@ model: longlive
 pipeline_init:
   width: 800
   height: 480
-  num_frame_per_block: 21
-  local_attn_size: 21
+  num_frame_per_block: 8
+  local_attn_size: 32
 
 video:
-  frames: 81           # ~5s at 16 fps — long enough to judge a seed
+  frames: 161           # ~5s at 16 fps — long enough to judge a seed
   fps: 16
   seed: 100            # default/manifest seed; the sweep overrides it per-cell
   encode_crf: 16
