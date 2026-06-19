@@ -49,8 +49,13 @@ prompts:
     text: "A spaceman in a bubble helmet adjusting dials on the spaceship dashboard, in a classic Hollywood science fiction film, chrome rocket interior, lurid retro color, grainy vintage film, cinematic, shot on 35mm film"
     seed: 101
 
+  - name: spacemanWalk
+    text: "A spaceman in a bubble helmet walking slowly across the surface of the moon, in a classic Hollywood science fiction film, starry black sky and distant earth, lurid retro color, grainy vintage film, cinematic, shot on 35mm film"
+    seed: 102
+
   - name: scream
-    text: "Close-up of a beautiful young woman with feathered hair screaming in terror, in a classic 1970s Hollywood horror film, dark haunted house, harsh shadows, grainy vintage film, cinematic, shot on 35mm film"
+    text: "Close-up of a frightened woman with long dark hair pressing both hands to her face and screaming in complete terror, in a classic 1970s Hollywood horror film, dark haunted house at night, ominous deep shadows, cold dim light, grainy vintage film, cinematic, shot on 35mm film"
+    seed: 101
 
   - name: crooner
     text: "A crooner in a tuxedo singing into a microphone, in a classic Hollywood musical, red velvet stage curtain, single spotlight, grainy vintage film, cinematic, shot on 35mm film"
@@ -113,9 +118,15 @@ prompts:
     text: "A princess in a flowing gown pounding on the locked door of a stone tower, in a classic Hollywood fantasy film, candlelit chamber, dramatic shadows, grainy vintage film, cinematic, shot on 35mm film"
     seed: 103
 
-  - name: austen
-    text: "A young woman in a Regency gown running through a green meadow, in a classic Hollywood period romance, soft natural light, grainy vintage film, cinematic, shot on 35mm film"
+  
+  - name: spacemanWalk
+    text: "A spaceman in a bubble helmet walking slowly across the surface of the moon, in a classic Hollywood science fiction film, starry black sky and distant earth, lurid retro color, grainy vintage film, cinematic, shot on 35mm film"
+    seed: 102
 
+
+  - name: austen
+    text: "A woman in a Regency gown running through a green meadow, in a classic Hollywood period romance, soft natural light, grainy vintage film, cinematic, shot on 35mm film"
+    seed: 101
 # The DEFORMATION — applied identically to every band video. The sweep
 # below dictates WHICH layers it acts on per video.
 bending_base:
