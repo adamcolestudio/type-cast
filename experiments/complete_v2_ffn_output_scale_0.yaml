@@ -13,83 +13,92 @@ pipeline_init:
   width: 800
   height: 480
   # Optional LongLive AR knobs — uncomment to override scope's defaults and use single chunk, set frames to 81 and fps to 8
-  # num_frame_per_block: 21
-  # local_attn_size: 21
+  num_frame_per_block: 8
+  local_attn_size: 32
   # sink_size: 3 --> skip this
 
 video:
   frames: 161         # ~10 s at 16 fps; matches your SETUP.md target
   fps: 16              # Pi 3B+ baseline (experimental per SETUP.md)
-  seed: 102           # held constant across the entire matrix
+  seed: 105           # held constant across the entire matrix
   encode_crf: 16      # SETUP.md baseline; lower = better quality
   keep_frames: false  # set true to archive raw PNGs next to each mp4
 
 prompts:
   - name: cowboy
-    text: "Close-up of a rugged cowboy drawing his revolver, in a classic Hollywood western, golden desert light, cinematic"
+    text: "Close-up of a rugged, handsome cowboy drawing his revolver, in a classic Hollywood western, dusty desert canyon, golden hour light, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: femme
-    text: "Close-up of a glamorous woman applying red lipstick, in a classic Hollywood film noir, dramatic shadows, cinematic"
+    text: "Close-up of a glamorous Hollywood actress fixing her red lipstick in a vanity mirror, in a classic Hollywood film noir, deep shadows, grainy vintage film, cinematic, shot on 35mm film"
 
-  - name: reveal
-    text: "Close-up of a woman lowering her sunglasses, in a classic Hollywood glamour film, soft studio light, cinematic"
+  - name: housewife
+    text: "Medium shot of a smiling 1950s housewife setting a dish on the dinner table, in a classic Hollywood domestic melodrama, bright suburban kitchen, warm light, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: vampire
-    text: "A caped vampire baring his fangs, in a classic Hollywood horror film, candlelight and fog, cinematic"
+    text: "A Nosferatu vampire baring his fangs, in a classic Hollywood gothic horror film, candlelit crypt, fog and shadow, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: kiss
-    text: "Two lovers kissing in an embrace, in a classic Hollywood romance, sweeping golden light, cinematic"
+    text: "Two lovers kissing in an embrace, in a classic Hollywood romance, windswept clifftop at sunset, sweeping golden light, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: spaceman
-    text: "A spaceman raising his ray gun, in a classic Hollywood science fiction film, lurid retro color, cinematic"
+    text: "A spaceman in a bubble helmet adjusting dials on the spaceship dashboard, in a classic Hollywood science fiction film, chrome rocket interior, lurid retro color, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: scream
-    text: "Close-up of a woman screaming in terror, in a classic Hollywood horror film, high-contrast shadows, cinematic"
+    text: "Close-up of a beautiful young woman with feathered hair screaming in terror, in a classic 1970s Hollywood horror film, dark haunted house, harsh shadows, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: crooner
-    text: "A crooner in a tuxedo singing into a microphone, in a classic Hollywood musical, single spotlight, cinematic"
+    text: "A crooner in a tuxedo singing into a microphone, in a classic Hollywood musical, red velvet stage curtain, single spotlight, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: gladiator
-    text: "A gladiator raising his sword to the crowd, in a classic Hollywood epic, dust and sunlight, cinematic"
+    text: "Medium shot of a gladiator raising his sword to the crowd, in a classic Hollywood epic, vast colosseum arena, dust and sunlight, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: detective
-    text: "Close-up of a hard-boiled detective lighting a cigarette, in a classic Hollywood film noir, venetian-blind shadows, cinematic"
+    text: "Close-up of a hard-boiled detective lighting a cigarette, in a classic Hollywood film noir, dim office at night, venetian-blind shadows, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: swashbuckler
-    text: "A masked swordsman lunging in a duel, in a classic Hollywood swashbuckler, candlelight, cinematic"
+    text: "A Spanish swordsman in a feathered hat lunging in a sword duel, in a classic Hollywood swashbuckler, candlelit castle staircase, flickering torchlight, grainy vintage film, cinematic, shot on 35mm film"
 
-  - name: dancer
-    text: "A flamenco dancer snapping into a pose, in a classic Hollywood musical, dramatic spotlight, cinematic"
+    # ballroom couple — more iconic of the romance-dance trope, but two figures
+  - name: dancerCouple
+    text: "A couple in evening dress waltzing across a ballroom floor, in a classic Hollywood musical, grand chandelier-lit hall, sweeping light, grainy vintage film, cinematic, shot on 35mm film"
+
+  # chorus line — spectacle/Busby Berkeley register
+  - name: dancerShowgirls
+    text: "A line of showgirls kicking in unison on a glittering stage, in a classic Hollywood musical, Busby Berkeley spectacle, sparkling light, grainy vintage film, cinematic, shot on 35mm film"
+
 
   - name: gangster
-    text: "Close-up of a pinstriped gangster lighting a cigar, in a classic Hollywood crime film, smoky low light, cinematic"
+    text: "Close-up of a pinstriped gangster lighting a cigar, in a classic Hollywood crime film, smoky speakeasy, dim low light, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: soldier
-    text: "A soldier rising from the trench waving his men forward, in a classic Hollywood war film, smoke and grit, cinematic"
+    text: "A soldier rising from the trench waving his men forward, in a classic Hollywood war film, smoke and grit, overcast battlefield light, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: pinup
-    text: "A smiling pin-up girl laughing, in a classic Hollywood technicolor film, glamour seductive, cinematic"
+    text: "A pin-up girl dancing in a swirling dress, in a classic Hollywood technicolor musical, bright painted backdrop, glamour studio light, vintage film grain, cinematic, shot on 35mm film"
 
   - name: mummy
-    text: "A bandaged mummy reaching forward, in a classic Hollywood horror film, torchlight and shadow, cinematic"
+    text: "A bandaged mummy reaching forward, in a classic Hollywood horror film, ancient tomb, torchlight and shadow, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: aviator
-    text: "Close-up of an aviator in goggles gripping the controls, in a classic Hollywood adventure film, cockpit light, cinematic"
+    text: "Close-up of an aviator in goggles gripping the controls, in a classic Hollywood adventure film, vintage cockpit, dramatic side light, grainy vintage film, cinematic, shot on 35mm film"
 
-  - name: showgirl
-    text: "A showgirl in a feathered headdress descending a staircase, in a classic Hollywood musical, sparkling light, cinematic"
+  - name: burlesque
+    text: "A burlesque dancer in a corset swaying on stage, in a classic Hollywood musical, red velvet bordello, sultry spotlight, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: knight
-    text: "A knight raising his sword toward a dragon, in a classic Hollywood fantasy film, mist and torchlight, cinematic"
+    text: "A knight raising his sword toward a dragon, in a classic Hollywood fantasy film, misty castle ruin, torchlight, grainy vintage film, cinematic, shot on 35mm film"
 
-  - name: jungle
-    text: "A jungle hero swinging on a vine, in a classic Hollywood adventure film, lush green light, cinematic"
+  - name: explorer
+    text: "An adventurer in a fedora cracking his whip in an ancient temple, in a classic Hollywood adventure film, torchlit stone ruins, dramatic light, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: prophet
-    text: "A robed prophet raising his arms as clouds part, in a classic Hollywood biblical epic, shafts of light, cinematic"
+    text: "A robed prophet raising his arms as the clouds part, in a classic Hollywood biblical epic, mountaintop, divine shafts of light, grainy vintage film, cinematic, shot on 35mm film"
 
-  - name: damsel
-    text: "A damsel tied to railroad tracks struggling, in a classic Hollywood melodrama, dramatic lighting, cinematic"
+  - name: princess
+    text: "A princess in a flowing gown pounding on the locked door of a stone tower, in a classic Hollywood fantasy film, candlelit chamber, dramatic shadows, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: austen
+    text: "A young woman in a Regency gown running through a green meadow, in a classic Hollywood period romance, soft natural light, grainy vintage film, cinematic, shot on 35mm film"
 
 # The DEFORMATION — applied identically to every band video. The sweep
 # below dictates WHICH layers it acts on per video.
@@ -115,4 +124,4 @@ merge: true             # concat per-prompt videos into a single mp4
 # Optional — where the experiment-run folder lands. Defaults to
 # ``<yaml-dir>/../output/``. Set to an absolute path (e.g. an external
 # SSD mount) when local disk is tight. ``--output`` CLI flag overrides.
-# output_dir: /home/adam/mnt/ssd/typecast_runs
+output_dir: /home/adam/mnt/ssd/typecast_runs

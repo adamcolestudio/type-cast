@@ -58,8 +58,14 @@ prompts:
   - name: swashbuckler
     text: "A masked swordsman lunging in a duel, in a classic Hollywood swashbuckler, candlelight, cinematic"
 
-  - name: dancer
-    text: "A flamenco dancer snapping into a pose, in a classic Hollywood musical, dramatic spotlight, cinematic"
+    # ballroom couple — more iconic of the romance-dance trope, but two figures
+  - name: dancingCouple
+    text: "A couple in evening dress waltzing across a ballroom floor, in a classic Hollywood musical, grand chandelier-lit hall, sweeping light, grainy vintage film, cinematic, shot on 35mm film"
+
+  # chorus line — spectacle/Busby Berkeley register
+  - name: dancerShowgirls
+    text: "A line of showgirls kicking in unison on a glittering stage, in a classic Hollywood musical, Busby Berkeley spectacle, sparkling light, grainy vintage film, cinematic, shot on 35mm film"
+
 
   - name: gangster
     text: "Close-up of a pinstriped gangster lighting a cigar, in a classic Hollywood crime film, smoky low light, cinematic"
@@ -115,4 +121,4 @@ merge: true             # concat per-prompt videos into a single mp4
 # Optional — where the experiment-run folder lands. Defaults to
 # ``<yaml-dir>/../output/``. Set to an absolute path (e.g. an external
 # SSD mount) when local disk is tight. ``--output`` CLI flag overrides.
-# output_dir: /home/adam/mnt/ssd/typecast_runs
+output_dir: /home/adam/mnt/ssd/typecast_runs
