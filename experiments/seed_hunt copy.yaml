@@ -1,0 +1,131 @@
+# Seed hunt — find the best RNG seed for each prompt BEFORE committing to a
+# full bending sweep.
+#
+# How it works: bending is held OFF (bending_base.bending_enabled: false) and
+# only the seed varies cell-to-cell (sweep kind: seed). So each output is a
+# pure baseline render at a different noise seed. Each video is named by its
+# seed — prompt-NN_seed-<value>.mp4 — and the seed is ALSO recorded in
+# manifest.json (top-level "seed" per video), so the file you pick maps
+# straight back to a number you can pin.
+#
+# Run it:
+#   type-cast run experiments/seed_hunt.yaml
+#   # Preview the matrix first, no GPU:
+#   type-cast run experiments/seed_hunt.yaml --dry-run
+#   # Sanity-check the parsed spec + video count:
+#   type-cast validate experiments/seed_hunt.yaml
+#
+# Then: eyeball the prompt-NN_seed-<value>.mp4 files, pick the best-looking
+# seed, and pin that number in your real experiment's `video.seed` (applies to
+# all prompts) or a per-prompt `seed:` (one prompt only).
+#
+# Matrix: 2 prompts x 8 seeds = 16 videos (no bands, no separate baseline).
+
+name: seed_hunt
+model: longlive
+
+pipeline_init:
+  width: 800
+  height: 480
+  num_frame_per_block: 8
+  local_attn_size: 32
+
+video:
+  frames: 161           # ~5s at 16 fps — long enough to judge a seed
+  fps: 16
+  seed: 100            # default/manifest seed; the sweep overrides it per-cell
+  encode_crf: 16
+
+prompts:
+  - name: cowboy_closeup
+    text: "Extreme close-up of a rugged cowboy's eyes narrowing under his hat brim, then drawing his revolver, in a classic Hollywood western, dusty desert canyon, harsh golden light, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: kiss
+    text: "Two lovers kissing in an embrace, in a classic Hollywood romance, windswept clifftop at sunset, sweeping golden light, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: spacemanWalk
+    text: "A spaceman in a bubble helmet walking slowly across the surface of the moon, in a classic Hollywood science fiction film, starry black sky and distant earth, lurid retro color, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: glamourgirl
+    text: "A glamorous starlet in a swirling satin gown dancing across a grand musical stage, in a classic Hollywood technicolor musical, lavish Art Deco set with sweeping staircases, bright theatrical lighting, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: crooner
+    text: "A dashing handsome crooner in a white tuxedo jacket singing into a vintage microphone, in a classic Hollywood musical, smoky nightclub, moody spotlight and atmospheric haze, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: gladiator
+    text: "Close-up of a fierce gladiator raising his sword to fight a lion, in a classic Hollywood epic, sandy colosseum arena, dust and dramatic sunlight, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: soldier_closeup
+    text: "Close-up of a determined soldier's face as he shouts and waves his men forward, in a classic Hollywood war film, smoke and grit, overcast battlefield light, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: scream
+    text: "Close-up of a frightened woman with long dark hair pressing both hands to her face and screaming in complete terror, in a classic 1970s Hollywood horror film, dark haunted house at night, ominous deep shadows, cold dim light, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: housewife
+    text: "Medium shot of a smiling 1950s housewife setting a dish on the dinner table, in a classic Hollywood domestic melodrama, bright suburban kitchen, warm light, grainy vintage film, cinematic, shot on 35mm film"
+  
+  - name: gangster
+    text: "Close-up of a pinstriped gangster lighting a cigar, in a classic Hollywood crime film, smoky speakeasy, dim low light, grainy vintage film, cinematic, shot on 35mm film"
+  
+  - name: vampire
+    text: "A handsome aristocratic vampire in a black cape rising from a coffin and spreading his arms wide to open his cape, fangs bared, in a classic 1930s Hollywood horror film, candlelit castle, soft gothic shadows, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: femme
+    text: "Black-and-white classic Hollywood cinema, 1930s, fine film grain, soft diffused key light with a glow on her hair, in the style of Bette Davis, dramatic zoom from full body to close-up of a glamorous leading lady in an ornate ballgown and diamond earrings, carefully touching up her lipstick, cinematic, shot on 35mm film"
+
+  - name: melodrama
+    text: "Lush 1950s technicolor Hollywood melodrama, glossy saturated color, close-up of a weeping woman in an elegant satin gown with tears streaming down her face, ornate period living room, dramatic jewel-toned lighting, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: explorer
+    text: "An adventurer in a fedora cracking his whip in an ancient temple, in a classic Hollywood adventure film, torchlit stone ruins, dramatic light, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: cowboy
+    text: "Close-up of a rugged, handsome cowboy drawing his revolver, in a classic Hollywood western, dusty desert canyon, golden hour light, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: kiss_closeup
+    text: "Black-and-white classic Hollywood cinema, 1940s, fine film grain, soft diffused light, extreme close-up of a handsome leading man and a glamorous leading lady in a passionate romantic kiss, lips and cheeks highlighted by dramatic shadows, cinematic, shot on 35mm film"
+
+  - name: austen
+    text: "A woman in a Regency gown running through a green meadow, in a classic Hollywood period romance, soft natural light, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: detective
+    text: "Close-up of a hard-boiled detective lighting a cigarette, in a classic Hollywood film noir, dim office at night, venetian-blind shadows, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: swashbuckler
+    text: "A Spanish swordsman in a feathered hat lunging in a sword duel, in a classic Hollywood swashbuckler, candlelit castle staircase, flickering torchlight, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: soldier
+    text: "A soldier rising from the trench waving his men forward, in a classic Hollywood war film, smoke and grit, overcast battlefield light, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: knight
+    text: "A knight raising his sword toward a dragon, in a classic Hollywood fantasy film, misty castle ruin, torchlight, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: jazzsinger
+    text: "A glamorous female jazz singer in a blue velvet gown singing into a vintage microphone, in a classic Hollywood musical, smoky dim nightclub, sultry blue spotlight, grainy vintage film, cinematic, shot on 35mm film"
+  
+
+# Bending OFF — this is a pure baseline seed hunt. (To instead find the best
+# seed for a SPECIFIC bend, enable bending here and add the bend's params,
+# e.g. ffn_output_scale, exactly as in your real experiment YAML.)
+bending_base:
+  bending_enabled: false
+
+# Vary the seed cell-to-cell. Either list seeds explicitly:
+sweep:
+  kind: seed
+  seeds: [100, 101, 102, 103]
+
+
+  # ...or use the range shorthand instead of the list above:
+  # start: 100
+  # count: 8
+  # step: 1
+
+# The seeds ARE the videos here, so no separate baseline is needed.
+baseline:
+  per_prompt: false
+
+merge: false
+
+output_dir: /home/adam/mnt/ssd/typecast_runs
+
