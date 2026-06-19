@@ -37,81 +37,46 @@ video:
   encode_crf: 16
 
 prompts:
-  - name: cowboy
-    text: "Close-up of a rugged, handsome cowboy drawing his revolver, in a classic Hollywood western, dusty desert canyon, golden hour light, grainy vintage film, cinematic, 35mm"
-
   - name: femme
-    text: "Close-up of a glamorous Hollywood actress fixing her red lipstick in a vanity mirror, in a classic Hollywood film noir, deep shadows, grainy vintage film, cinematic, 35mm"
-
-
-  - name: melodrama
-    text: "Close-up of a beautiful woman sobbing with tears streaming down her face, in a classic Douglas Sirk Hollywood melodrama, lush domestic interior, saturated technicolor light, grainy vintage film, cinematic, shot on 35mm film"
-
-  - name: vampire
-    text: "A Nosferatu vampire baring his fangs, in a classic Hollywood gothic horror film, candlelit crypt, fog and shadow, grainy vintage film, cinematic, 35mm"
-
-  - name: kiss
-    text: "Two lovers kissing in an embrace, in a classic Hollywood romance, windswept clifftop at sunset, sweeping golden light, grainy vintage film, cinematic, 35mm"
+    text: "Black-and-white classic Hollywood cinema, 1930s, fine film grain, soft diffused key light with a glow on her hair, dramatic zoom from full body to close-up of a glamorous leading lady in an ornate gown and diamond earrings, carefully touching up her lipstick, cinematic, shot on 35mm film"
 
   - name: spaceman
-    text: "A spaceman in a bubble helmet adjusting dials on the spaceship dashboard, in a classic Hollywood science fiction film, chrome rocket interior, lurid retro color, grainy vintage film, cinematic, 35mm"
+    text: "A spaceman in a bubble helmet walking slowly across the surface of the moon, in a classic Hollywood science fiction film, starry black sky and distant earth, lurid retro color, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: scream
-    text: "Close-up of a beautiful young woman with feathered hair screaming in terror, in a classic 1970s Hollywood horror film, dark haunted house, harsh shadows, grainy vintage film, cinematic, 35mm"
+    text: "Close-up of a frightened woman with long dark hair pressing both hands to her face and screaming in complete terror, in a classic 1970s Hollywood horror film, dark haunted house at night, ominous deep shadows, cold dim light, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: austen
-    text: "A sobbing heartbroken young woman in a Regency gown running through a green meadow, in a classic Hollywood period romance, soft natural light, grainy vintage film, cinematic, 35mm"
+    text: "A woman in a Regency gown running through a green meadow, in a classic Hollywood period romance, soft natural light, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: crooner
-    text: "A crooner in a tuxedo singing into a microphone, in a classic Hollywood musical, red velvet stage curtain, single spotlight, grainy vintage film, cinematic, 35mm"
+    text: "A dashing handsome crooner in a white tuxedo jacket singing into a vintage microphone, in a classic Hollywood musical, smoky nightclub, moody spotlight and atmospheric haze, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: gladiator
-    text: "Medium shot of a gladiator raising his sword to the crowd, in a classic Hollywood epic, vast colosseum arena, dust and sunlight, grainy vintage film, cinematic, 35mm"
+    text: "Close-up of a fierce gladiator raising his sword to fight a lion, in a classic Hollywood epic, sandy colosseum arena, dust and dramatic sunlight, grainy vintage film, cinematic, shot on 35mm film"
 
-  - name: detective
-    text: "Close-up of a hard-boiled detective lighting a cigarette, in a classic Hollywood film noir, dim office at night, venetian-blind shadows, grainy vintage film, cinematic, 35mm"
+  - name: vampire
+    text: "A handsome aristocratic vampire in a black cape baring his fangs as he rises from a coffin, in a classic 1930s Hollywood horror film, candlelit castle, soft gothic shadows, grainy vintage film, cinematic, shot on 35mm film"
 
-  - name: swashbuckler
-    text: "A Spanish swordsman in a feathered hat lunging in a sword duel, in a classic Hollywood swashbuckler, candlelit castle staircase, flickering torchlight, grainy vintage film, cinematic, 35mm"
+  - name: melodrama
+    text: "Lush 1950s technicolor Hollywood melodrama, glossy saturated color, close-up of a weeping woman in an elegant satin gown with tears streaming down her face, ornate period living room, dramatic jewel-toned lighting, grainy vintage film, cinematic, shot on 35mm film"
 
-    # ballroom couple — more iconic of the romance-dance trope, but two figures
-  - name: dancerCouple
-    text: "A couple in evening dress waltzing across a ballroom floor, in a classic Hollywood musical, grand chandelier-lit hall, sweeping light, grainy vintage film, cinematic, 35mm"
-
-  # chorus line — spectacle/Busby Berkeley register
-  - name: dancerShowgirls
-    text: "A line of showgirls kicking in unison on a glittering stage, in a classic Hollywood musical, Busby Berkeley spectacle, sparkling light, grainy vintage film, cinematic, 35mm"
-
-
-  - name: gangster
-    text: "Close-up of a pinstriped gangster lighting a cigar, in a classic Hollywood crime film, smoky speakeasy, dim low light, grainy vintage film, cinematic, 35mm"
-
-  - name: soldier
-    text: "A soldier rising from the trench waving his men forward, in a classic Hollywood war film, smoke and grit, overcast battlefield light, grainy vintage film, cinematic, 35mm"
-
-  - name: pinup
-    text: "A pin-up girl dancing in a swirling dress, in a classic Hollywood technicolor musical, bright painted backdrop, glamour studio light, vintage film grain, cinematic, 35mm"
-
-  - name: aviator
-    text: "Close-up of an aviator in goggles gripping the controls, in a classic Hollywood adventure film, vintage cockpit, dramatic side light, grainy vintage film, cinematic, 35mm"
-
-  - name: burlesque
-    text: "A burlesque dancer in a corset swaying on stage, in a classic Hollywood musical, red velvet bordello, sultry spotlight, grainy vintage film, cinematic, 35mm"
-
-  - name: knight
-    text: "A knight raising his sword toward a dragon, in a classic Hollywood fantasy film, misty castle ruin, torchlight, grainy vintage film, cinematic, 35mm"
-
-  - name: explorer
-    text: "An adventurer in a fedora cracking his whip in an ancient temple, in a classic Hollywood adventure film, torchlit stone ruins, dramatic light, grainy vintage film, cinematic, 35mm"
-
-  - name: prophet
-    text: "A robed prophet raising his arms as the clouds part, in a classic Hollywood biblical epic, mountaintop, divine shafts of light, grainy vintage film, cinematic, 35mm"
+  - name: glamourgirl
+    text: "A glamorous starlet in a swirling satin gown dancing across a grand musical stage, in a classic Hollywood technicolor musical, lavish Art Deco set with sweeping staircases, bright theatrical lighting, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: princess
-    text: "A princess in a flowing gown pounding on the locked door of a stone tower, in a classic Hollywood fantasy film, candlelit chamber, dramatic shadows, grainy vintage film, cinematic, 35mm"
+    text: "A fairytale princess in a shimmering blue ball gown running down a grand palace staircase at midnight, in a classic Hollywood fantasy film, sparkling marble steps, magical glowing light, grainy vintage film, cinematic, shot on 35mm film"
 
-  - name: housewife
-    text: "Medium shot of a smiling 1950s housewife setting a dish on the dinner table, in a classic Hollywood domestic melodrama, bright suburban kitchen, warm light, grainy vintage film, cinematic, 35mm"
+  # --- dancer: three options, since waltz + chorus both drifted modern ---
+
+  - name: dancer_tap
+    text: "A tap dancer in a top hat and tails dancing down a grand staircase, in a classic Hollywood musical, glittering Art Deco set, bright spotlight, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: dancer_baroque
+    text: "An elegant couple in lavish baroque costumes and powdered wigs dancing a stately minuet, in a classic Hollywood period film, candlelit Versailles palace ballroom, golden chandelier light, grainy vintage film, cinematic, shot on 35mm film"
+
+  - name: dancer_chorus
+    text: "A row of 1930s chorus girls in matching sequined costumes kicking in unison, Busby Berkeley spectacle, in a classic Hollywood musical, lavish Art Deco stage, sparkling footlights, grainy vintage film, cinematic, shot on 35mm film"
 
 # Bending OFF — this is a pure baseline seed hunt. (To instead find the best
 # seed for a SPECIFIC bend, enable bending here and add the bend's params,
