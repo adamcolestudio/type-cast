@@ -39,21 +39,26 @@ video:
 prompts:
   - name: femme
     text: "Black-and-white classic Hollywood cinema, 1930s, fine film grain, soft diffused key light with a glow on her hair, in the style of Bette Davis, dramatic zoom from full body to close-up of a glamorous leading lady in an ornate ballgown and diamond earrings, carefully touching up her lipstick, cinematic, shot on 35mm film"
+    seed: 103
 
   - name: vampire
     text: "A handsome aristocratic vampire in a black cape rising from a coffin and spreading his arms wide to open his cape, fangs bared, in a classic 1930s Hollywood horror film, candlelit castle, soft gothic shadows, grainy vintage film, cinematic, shot on 35mm film"
+    seed: 100
 
   - name: princess
     text: "Close-up of a fairytale princess in a shimmering blue ball gown and a crown hurrying down a grand palace staircase toward the camera at midnight, in a classic Hollywood fantasy film, sparkling marble steps, magical glowing light, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: kiss_closeup
     text: "Black-and-white classic Hollywood cinema, 1940s, fine film grain, soft diffused light, extreme close-up of a handsome leading man and a glamorous leading lady in a passionate romantic kiss, lips and cheeks highlighted by dramatic shadows, cinematic, shot on 35mm film"
+    seed: 101
   
   - name: cowboy_closeup
     text: "Extreme close-up of a rugged cowboy's eyes narrowing under his hat brim, then drawing his revolver, in a classic Hollywood western, dusty desert canyon, harsh golden light, grainy vintage film, cinematic, shot on 35mm film"
+    seed: 
 
   - name: soldier_closeup
     text: "Close-up of a determined soldier's face as he shouts and waves his men forward, in a classic Hollywood war film, smoke and grit, overcast battlefield light, grainy vintage film, cinematic, shot on 35mm film"
+    seed: 100
 
 
 # Bending OFF — this is a pure baseline seed hunt. (To instead find the best
