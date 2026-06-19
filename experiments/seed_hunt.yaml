@@ -27,8 +27,8 @@ model: longlive
 pipeline_init:
   width: 800
   height: 480
-  num_frame_per_block: 8
-  local_attn_size: 32
+  # num_frame_per_block: 8
+  # local_attn_size: 32
 
 video:
   frames: 161           # ~5s at 16 fps — long enough to judge a seed
@@ -45,9 +45,6 @@ prompts:
 
   - name: spacemanWalk
     text: "A spaceman in a bubble helmet walking slowly across the surface of the moon, in a classic Hollywood science fiction film, starry black sky and distant earth, lurid retro color, grainy vintage film, cinematic, shot on 35mm film"
-
-  - name: knight
-    text: "A knight raising his sword toward a dragon, in a classic Hollywood fantasy film, misty castle ruin, torchlight, grainy vintage film, cinematic, shot on 35mm film"
 
   - name: glamourgirl
     text: "A glamorous starlet in a swirling satin gown dancing across a grand musical stage, in a classic Hollywood technicolor musical, lavish Art Deco set with sweeping staircases, bright theatrical lighting, grainy vintage film, cinematic, shot on 35mm film"
@@ -82,9 +79,6 @@ prompts:
   - name: explorer
     text: "An adventurer in a fedora cracking his whip in an ancient temple, in a classic Hollywood adventure film, torchlit stone ruins, dramatic light, grainy vintage film, cinematic, shot on 35mm film"
 
-  - name: spaceman
-    text: "A spaceman in a bubble helmet adjusting dials on the spaceship dashboard, in a classic Hollywood science fiction film, chrome rocket interior, lurid retro color, grainy vintage film, cinematic, shot on 35mm film"
-
   - name: cowboy
     text: "Close-up of a rugged, handsome cowboy drawing his revolver, in a classic Hollywood western, dusty desert canyon, golden hour light, grainy vintage film, cinematic, shot on 35mm film"
 
@@ -100,23 +94,15 @@ prompts:
   - name: swashbuckler
     text: "A Spanish swordsman in a feathered hat lunging in a sword duel, in a classic Hollywood swashbuckler, candlelit castle staircase, flickering torchlight, grainy vintage film, cinematic, shot on 35mm film"
 
-  - name: dancer_baroque
-    text: "An elegant couple in lavish baroque costumes and powdered wigs dancing a stately minuet, in a classic Hollywood period film, candlelit Versailles palace ballroom, golden chandelier light, grainy vintage film, cinematic, shot on 35mm film"
-
   - name: soldier
     text: "A soldier rising from the trench waving his men forward, in a classic Hollywood war film, smoke and grit, overcast battlefield light, grainy vintage film, cinematic, shot on 35mm film"
 
-  - name: aviator
-    text: "Close-up of an aviator in goggles gripping the controls, in a classic Hollywood adventure film, vintage cockpit, dramatic side light, grainy vintage film, cinematic, shot on 35mm film"
+  - name: knight
+    text: "A knight raising his sword toward a dragon, in a classic Hollywood fantasy film, misty castle ruin, torchlight, grainy vintage film, cinematic, shot on 35mm film"
 
-  - name: burlesque
-    text: "A burlesque dancer in a corset swaying on stage, in a classic Hollywood musical, red velvet bordello, sultry spotlight, grainy vintage film, cinematic, shot on 35mm film"
-
-  - name: prophet
-    text: "A robed prophet raising his arms as the clouds part, in a classic Hollywood biblical epic, mountaintop, divine shafts of light, grainy vintage film, cinematic, shot on 35mm film"
-
-  - name: princess
-    text: "A fairytale princess in a shimmering blue ball gown running down a grand palace staircase at midnight, in a classic Hollywood fantasy film, sparkling marble steps, magical glowing light, grainy vintage film, cinematic, shot on 35mm film"
+  - name: jazzsinger
+    text: "A glamorous female jazz singer in a blue velvet gown singing into a vintage microphone, in a classic Hollywood musical, smoky dim nightclub, sultry blue spotlight, grainy vintage film, cinematic, shot on 35mm film"
+  
 
 # Bending OFF — this is a pure baseline seed hunt. (To instead find the best
 # seed for a SPECIFIC bend, enable bending here and add the bend's params,
