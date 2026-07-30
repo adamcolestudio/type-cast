@@ -1,5 +1,5 @@
 # Static kiosk site: index.html + videos/*.mp4
-# Deploy this folder directly:  netlify deploy --prod --dir .
+# Deploy this folder directly IN webui/: npx netlify deploy --prod --dir .
 #
 # Caching goal: clips download once and replay from cache, BUT a clip
 # re-uploaded under the SAME filename is picked up automatically. We do
